@@ -1,22 +1,34 @@
 package org.test.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
+import org.hibernate.annotations.Cascade;
+import org.springframework.stereotype.Repository;
+
+
+
+@Entity
+@Table(name = "user_db")
+@Data
+@Builder
 public class User {
-    private String username;
-    private Integer money;
+    @Id
+    private Integer id;
+    private Long money;
 
-    public String getUsername() {
-        return username;
-    }
+    @OneToOne
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
+    private Bag bag;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    @OneToOne
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
+    private Helmet helmet;
 
-    public Integer getMoney() {
-        return money;
-    }
-
-    public void setMoney(Integer money) {
-        this.money = money;
-    }
+    @OneToOne
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
+    private Pick pick;
 }
