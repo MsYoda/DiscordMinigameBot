@@ -1,4 +1,4 @@
-package org.test.entity;
+package org.test.entity.user_elements;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,10 +8,10 @@ import lombok.Data;
 
 @Data
 @Entity
-public class Helmet {
+public class Pick {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private Integer toughness;
-    private Integer lightPower;
+    private Float oreMultiplayer;
+    private Float rareOreProbability;
 }

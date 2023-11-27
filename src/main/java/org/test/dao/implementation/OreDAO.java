@@ -1,87 +1,79 @@
 package org.test.dao.implementation;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.test.dao.UserDAOInterface;
+import org.test.dao.OreDAOInterface;
+import org.test.entity.Ore;
 import org.test.entity.User;
-import org.test.entity.user_elements.Bag;
 
 import java.sql.SQLException;
+import java.util.List;
 
 @Service
-public class UserDAO implements UserDAOInterface {
+public class OreDAO implements OreDAOInterface {
     @Autowired
     private SessionFactory sessionFactory;
     @Override
-    public void add(User user) throws SQLException {
+    public void add(Ore ore) throws SQLException {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
 
-        session.save(user);
+        session.save(ore);
 
         session.getTransaction().commit();
         session.close();
     }
 
     @Override
-    public User get(Long id) throws SQLException {
+    public Ore get(Long id) throws SQLException {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
 
-        User user = session.get(User.class, id);
+        Ore ore = (Ore) session.get(Ore.class, id);
 
         session.getTransaction().commit();
         session.close();
 
-        return user;
+        return ore;
     }
 
     @Override
-    public void update(User user) throws SQLException {
+    public void update(Ore ore) throws SQLException {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
 
-        session.update(user);
-
-        session.getTransaction().commit();
-        session.close();
-    }
-
-    @Override
-    public void delete(User user) throws SQLException {
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-
-        session.delete(user);
+        session.update(ore);
 
         session.getTransaction().commit();
         session.close();
     }
 
     @Override
-    public Bag getBag(Long userID) throws SQLException {
+    public void delete(Ore ore) throws SQLException {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
 
-        Bag bag = (Bag) session.load(User.class, userID).getBag();
+        session.delete(ore);
 
         session.getTransaction().commit();
         session.close();
-
-        return bag;
     }
 
     @Override
-    public void clearBag(Long userID) throws SQLException {
+    public List<Ore> getALl() throws SQLException {
         Session session = sessionFactory.openSession();
-        session.beginTransaction();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
 
-        //session.delete(user);
+        CriteriaQuery<Ore> criteria = builder.createQuery(Ore.class);
+        criteria.from(Ore.class);
 
-        session.getTransaction().commit();
+        List<Ore> ores = session.createQuery(criteria).getResultList();
+
         session.close();
+        return ores;
     }
 }

@@ -13,4 +13,9 @@ public class Ore {
     private String name;
     private Float rarity;
     private Integer price;
+
+    public int compare(Ore a, Ore b){
+
+        return a.getRarity().compareTo(b.getRarity());
+    }
 }

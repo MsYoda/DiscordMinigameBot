@@ -1,10 +1,16 @@
-package org.test.entity;
+package org.test.entity.user_elements;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "bag_element")
 public class BagElement {
     @Id

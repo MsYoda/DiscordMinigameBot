@@ -29,10 +29,12 @@
         <mapping package="org.test.entity"/>
         <mapping class="org.test.entity.User" />
         <mapping class="org.test.entity.Ore" />
-        <mapping class="org.test.entity.Pick" />
-        <mapping class="org.test.entity.Helmet" />
-        <mapping class="org.test.entity.Bag" />
-        <mapping class="org.test.entity.BagElement" />
+        <mapping class="org.test.entity.Cooldown" />
+        <mapping class="org.test.entity.user_elements.Pick" />
+        <mapping class="org.test.entity.user_elements.Helmet" />
+        <mapping class="org.test.entity.user_elements.Bag" />
+        <mapping class="org.test.entity.user_elements.BagElement" />
+
 
     </session-factory>
 </hibernate-configuration>

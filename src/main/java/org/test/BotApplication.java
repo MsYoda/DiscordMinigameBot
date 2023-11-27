@@ -1,31 +1,21 @@
 package org.test;
 
-import jakarta.persistence.EntityManagerFactory;
-import lombok.val;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.test.dao.implementation.UserDAO;
-import org.test.entity.*;
-import org.test.listeners.BankSlashCommandsListener;
-
-import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import org.test.dto.MineDTO;
+import org.test.dto.ShopDTO;
+import org.test.listeners.SlashCommandListener;
+import org.test.services.Mine;
+import org.test.services.Shop;
 
 @Configuration
 @ComponentScan
@@ -44,32 +34,20 @@ public class BotApplication {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BotApplication.class);
 
-/*        UserDAO userDAO = context.getBean(UserDAO.class);
-        Bag bag = new Bag();
-        BagElement bagElement = new BagElement();
-        bagElement.setOreAmount(10L);
-        bagElement.setOreID(7L);
+       /* UserDAO userDAO = context.getBean(UserDAO.class);
+        User user = userDAO.get(1L);*/
 
-        List<BagElement> bagElements = new ArrayList<>();
-        bagElements.add(bagElement);
-
-        bag.setContent(bagElements);
-
-        User user = User.builder().id(1).money(1000L).pick(new Pick()).helmet(new Helmet()).bag(bag).build();
-
-        userDAO.update(0L, user);*/
-
-        jda = JDABuilder.createDefault("")
+        jda = JDABuilder.createDefault("MTEzOTYzMDA3NjU5ODY5Mzg5OA.GMQZdL.Ifg6OklghqhmOB5tcJbRQcARU3u2pDGB0TRj0Y")
                 .disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .setBulkDeleteSplittingEnabled(false)
                 .setActivity(Activity.watching("TV"))
-                .addEventListeners(context.getBean(BankSlashCommandsListener.class))
+                .addEventListeners(context.getBean(SlashCommandListener.class))
                 .build()
                 .awaitReady();
 
         jda.updateCommands().addCommands(
-                Commands.slash("inventory", "Test the bot interaction")
+                Commands.slash("mine", "Отправиться в шахту за новыми ресурсами")
                 /*Commands.slash(BotLanguageConfig.addMoneyCommandName, "Gives money to the user")
                         .addOption(OptionType.USER, BotLanguageConfig.userParamName, "User's balance will be increased for 'money' value")
                         .addOption(OptionType.INTEGER, BotLanguageConfig.moneyParamName, "Money to add to user balance"),
