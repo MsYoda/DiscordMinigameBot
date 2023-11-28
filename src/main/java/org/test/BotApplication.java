@@ -1,5 +1,6 @@
 package org.test;
 
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.hibernate.SessionFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -37,7 +38,7 @@ public class BotApplication {
        /* UserDAO userDAO = context.getBean(UserDAO.class);
         User user = userDAO.get(1L);*/
 
-        jda = JDABuilder.createDefault("MTEzOTYzMDA3NjU5ODY5Mzg5OA.GMQZdL.Ifg6OklghqhmOB5tcJbRQcARU3u2pDGB0TRj0Y")
+        jda = JDABuilder.createDefault("")
                 .disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .setBulkDeleteSplittingEnabled(false)
@@ -47,16 +48,13 @@ public class BotApplication {
                 .awaitReady();
 
         jda.updateCommands().addCommands(
-                Commands.slash("mine", "Отправиться в шахту за новыми ресурсами")
-                /*Commands.slash(BotLanguageConfig.addMoneyCommandName, "Gives money to the user")
-                        .addOption(OptionType.USER, BotLanguageConfig.userParamName, "User's balance will be increased for 'money' value")
-                        .addOption(OptionType.INTEGER, BotLanguageConfig.moneyParamName, "Money to add to user balance"),
-                Commands.slash(BotLanguageConfig.removeMoneyCommandName, "Removes money from the user")
-                        .addOption(OptionType.USER, BotLanguageConfig.userParamName, "User's balance will be decreased for 'money' value")
-                        .addOption(OptionType.INTEGER, BotLanguageConfig.moneyParamName, "Money to remove from user's balance"),
-                Commands.slash(BotLanguageConfig.transferMoneyCommandName, "Sends money from source-user to destination-user")
-                        .addOption(OptionType.USER, BotLanguageConfig.destinationUserParamName, "Will receive money")
-                        .addOption(OptionType.INTEGER, BotLanguageConfig.moneyParamName, "Money to send")*/
+                Commands.slash("mine", "Отправиться в шахту за новыми ресурсами"),
+                Commands.slash("add_role", "Добавить роль в магазин")
+                        .addOption(OptionType.ROLE, "role", "Роль для добавления в магазин")
+                        .addOption(OptionType.INTEGER, "price", "Цена роли"),
+                Commands.slash("buy_role", "Добавить роль в магазин")
+                        .addOption(OptionType.ROLE, "role", "Покупаемая роль"),
+                Commands.slash("roles_shop", "Список ролей для покупки")
         ).queue();
 
     }

@@ -7,11 +7,14 @@ import lombok.NoArgsConstructor;
 import org.test.entity.user_elements.Bag;
 import org.test.entity.user_elements.BagElement;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class MineDTO {
     private boolean userDead;
-    private Bag userBag;
+    private List<OreDTO> oreDTOList;
+    private String report;
 }

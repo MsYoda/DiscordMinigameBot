@@ -19,7 +19,7 @@ import org.test.entity.user_elements.Pick;
 @Builder
 public class User {
     @Id
-    private Integer id;
+    private Long id;
     private Long money;
 
     @OneToOne(fetch = FetchType.EAGER)

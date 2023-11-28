@@ -1,13 +1,20 @@
 package org.test.entity.user_elements;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cascade;
 import org.test.entity.Ore;
 
 import java.util.List;
+import java.util.Objects;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "bag")
 public class Bag {
@@ -24,6 +31,14 @@ public class Bag {
                 .reduce(0L, (a, b) -> a + b);
 
         if (oreAmount >= this.bagSize) throw new Exception();
+
+        for (int i = 0; i < content.size(); i++)
+        {
+            if (Objects.equals(content.get(i).getOreID(), ore.getId())){
+                content.get(i).setOreAmount(content.get(i).getOreAmount() + count);
+                return;
+            }
+        }
 
         BagElement bagElement = BagElement.builder()
                 .oreID(ore.getId())

@@ -30,6 +30,7 @@
         <mapping class="org.test.entity.User" />
         <mapping class="org.test.entity.Ore" />
         <mapping class="org.test.entity.Cooldown" />
+        <mapping class="org.test.entity.Role" />
         <mapping class="org.test.entity.user_elements.Pick" />
         <mapping class="org.test.entity.user_elements.Helmet" />
         <mapping class="org.test.entity.user_elements.Bag" />
