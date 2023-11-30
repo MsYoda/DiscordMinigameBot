@@ -6,15 +6,14 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.test.dao.implementation.OreDAO;
 import org.test.dao.implementation.UserDAO;
 import org.test.dto.MineDTO;
 import org.test.dto.OreDTO;
-import org.test.dto.ShopDTO;
 import org.test.entity.Role;
+import org.test.entity.minigames.HangmanSession;
+import org.test.services.Hangman;
 import org.test.services.Mine;
 import org.test.services.Shop;
 import org.test.utils.DiscordUtil;
@@ -26,12 +25,12 @@ import java.util.List;
 public class SlashCommandListener extends ListenerAdapter {
     @Autowired
     private Mine mine;
-
     @Autowired
     private Shop shop;
-
     @Autowired
     private UserDAO userDAO;
+    @Autowired
+    private Hangman hangman;
 
     public MessageEmbed errorEmbed(String text){
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -135,6 +134,30 @@ public class SlashCommandListener extends ListenerAdapter {
 
         return embedBuilder.build();
     }
+    public MessageEmbed doUpdateRole(SlashCommandInteractionEvent event) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle("Вызов команды");
+        embedBuilder.addField("Результат", "Роль куплена", false);
+
+        return embedBuilder.build();
+    }
+
+    public MessageEmbed doDeleteRole(SlashCommandInteractionEvent event) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle("Вызов команды");
+        embedBuilder.addField("Результат", "Роль куплена", false);
+
+        return embedBuilder.build();
+    }
+
+    public MessageEmbed doHangman(SlashCommandInteractionEvent event) {
+        HangmanSession session = hangman.runActivity(event.getHook(), Long.valueOf(event.getMember().getId()));
+
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle("Виселица");
+        embedBuilder.addField("Правила", "Вводите по одной русской букве и нажимайте Enter\nВведите y, чтобы начать игру", false);
+        return embedBuilder.build();
+    }
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event)
@@ -156,6 +179,9 @@ public class SlashCommandListener extends ListenerAdapter {
             case "add_role" -> botReply = doAddRole(event);
             case "buy_role" -> botReply = doBuyRole(event);
             case "roles_shop" -> botReply = doRolesShop(event);
+            case "update_role" -> botReply = doUpdateRole(event);
+            case "delete_role" -> botReply = doDeleteRole(event);
+            case "hangman" -> botReply = doHangman(event);
         }
 
         event.getHook().editOriginalEmbeds(botReply).queue();

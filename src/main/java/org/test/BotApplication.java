@@ -12,11 +12,11 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.test.dto.MineDTO;
-import org.test.dto.ShopDTO;
+import org.test.listeners.HangmanMessageListener;
 import org.test.listeners.SlashCommandListener;
-import org.test.services.Mine;
-import org.test.services.Shop;
+import org.test.utils.MathUtil;
+
+import java.io.Serial;
 
 @Configuration
 @ComponentScan
@@ -34,16 +34,14 @@ public class BotApplication {
     {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BotApplication.class);
-
-       /* UserDAO userDAO = context.getBean(UserDAO.class);
-        User user = userDAO.get(1L);*/
-
+        
         jda = JDABuilder.createDefault("")
                 .disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .setBulkDeleteSplittingEnabled(false)
                 .setActivity(Activity.watching("TV"))
                 .addEventListeners(context.getBean(SlashCommandListener.class))
+                .addEventListeners(context.getBean(HangmanMessageListener.class))
                 .build()
                 .awaitReady();
 
@@ -54,7 +52,12 @@ public class BotApplication {
                         .addOption(OptionType.INTEGER, "price", "Цена роли"),
                 Commands.slash("buy_role", "Добавить роль в магазин")
                         .addOption(OptionType.ROLE, "role", "Покупаемая роль"),
-                Commands.slash("roles_shop", "Список ролей для покупки")
+                Commands.slash("roles_shop", "Список ролей для покупки"),
+                Commands.slash("update_role", "Изменить цену роли")
+                        .addOption(OptionType.INTEGER, "price", "Новая цена"),
+                Commands.slash("delete_role", "Удалить роль")
+                        .addOption(OptionType.ROLE, "role", "Удаляемая роль"),
+                Commands.slash("hangman", "Сыграть в виселицу")
         ).queue();
 
     }

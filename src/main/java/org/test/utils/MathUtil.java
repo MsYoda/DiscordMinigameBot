@@ -5,10 +5,10 @@ import java.util.Random;
 public class MathUtil {
     public static Float getRandomFloat(Float a, Float b)
     {
-        return new Random().nextFloat(b - a) + a;
+        return new Random().nextFloat(b + 1 - a) + a;
     }
     public static Integer getRandomInt(Integer a, Integer b)
     {
-        return new Random().nextInt(b - a) + a;
+        return new Random().nextInt(b + 1 - a) + a;
     }
 }
