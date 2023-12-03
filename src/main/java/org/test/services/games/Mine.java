@@ -1,22 +1,22 @@
-package org.test.services;
+package org.test.services.games;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.test.dao.implementation.CooldownDAO;
 import org.test.dao.implementation.OreDAO;
 import org.test.dao.implementation.UserDAO;
 import org.test.dto.MineDTO;
 import org.test.dto.OreDTO;
-import org.test.dto.ShopDTO;
-import org.test.entity.CommandIDs;
+import org.test.entity.CommandID;
+import org.test.entity.Cooldown;
 import org.test.entity.Ore;
 import org.test.entity.User;
-import org.test.entity.user_elements.Bag;
 import org.test.entity.user_elements.BagElement;
+import org.test.services.background.CooldownManager;
 import org.test.utils.MathUtil;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -24,10 +24,10 @@ public class Mine {
     @Autowired
     private UserDAO userDAO;
     @Autowired
-    private CooldownDAO cooldownDAO;
-    @Autowired
     private OreDAO oreDAO;
 
+    @Autowired
+    private CooldownManager cooldownManager;
     private List<OreDTO> mapBagToOreDTOList(List<BagElement> content, List<Ore> ores)
     {
         List<OreDTO> result = new ArrayList<>();
@@ -58,14 +58,14 @@ public class Mine {
         Float randomValue = MathUtil.getRandomFloat(0.0f, totalRarity);
 
         Float cumulativeRarity = 0f;
-        int oreCount = MathUtil.getRandomInt(1, 3);
-        oreCount += (user.getHelmet().getLightPower() / 50);
+        int oreCount = MathUtil.getRandomInt(1, 3) + user.getHelmet().getLightPower();
+
         for (int i = 0; i < oreCount; i++) {
             for (Ore ore : ores) {
                 cumulativeRarity += ore.getRarity();
                 if (randomValue < cumulativeRarity) {
                     try {
-                        user.getBag().addOre(ore, 2L);
+                        user.getBag().addOre(ore, (long) Math.round(MathUtil.getRandomInt(1, 10) * user.getPick().getOreMultiplayer()));
                         break;
                     } catch (Exception e) {
                         return;
@@ -98,7 +98,15 @@ public class Mine {
     public MineDTO runActivity(Long userID) throws SQLException {
         MineDTO mineDTO = new MineDTO();
 
-        User user = userDAO.get(userID);
+        mineDTO.setCooldownActive(cooldownManager.isCooldownActive(userID, CommandID.MINE));
+
+        if (mineDTO.isCooldownActive())
+        {
+            mineDTO.setEndTime(cooldownManager.getByCommandAndUserID(userID, CommandID.MINE).get().getEndTime());
+            return mineDTO;
+        }
+
+        User user = userDAO.get(userID).orElseThrow();
         user.getBag().setContent(new ArrayList<>());
 
         List<Ore> ores = oreDAO.getALl();
@@ -110,13 +118,20 @@ public class Mine {
         mineOre(user, ores);
         caveDestructionEvent(user);
 
-        if (user.getHelmet().getToughness() <= 0) mineDTO.setUserDead(true);
+        if (user.getHelmet().getToughness() <= 0)
+        {
+            mineDTO.setUserDead(true);
+            user.getHelmet().setToughness(user.getHelmet().getMaxToughness());
+        }
 
         sellOre(user, ores);
 
         mineDTO.setOreDTOList(mapBagToOreDTOList(user.getBag().getContent(), ores));
 
         userDAO.update(user);
+
+        cooldownManager.setCooldown(userID, CommandID.MINE, LocalDateTime.now().plusMinutes(5));
+
         return mineDTO;
     }
 }

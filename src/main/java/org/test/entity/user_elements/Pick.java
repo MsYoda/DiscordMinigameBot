@@ -20,4 +20,16 @@ public class Pick {
     private Long id;
     private Float oreMultiplayer;
     private Float rareOreProbability;
+
+    public final static Float startOreMultiplayer = 1.0f;
+    public final static Float oreMultiplayerPerUpgrade = 0.1f;
+
+    public final static Float startRareOreProbability = 0.9f;
+    public final static Float rareOreProbabilityPerUpgrade = -0.05f;
+    public final static Long startUpgradePrice = 200L;
+
+    public Integer getLevel()
+    {
+        return (int) ((oreMultiplayer - startOreMultiplayer) / oreMultiplayerPerUpgrade);
+    }
 }

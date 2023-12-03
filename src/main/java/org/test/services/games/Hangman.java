@@ -1,11 +1,9 @@
-package org.test.services;
+package org.test.services.games;
 
-import lombok.Getter;
-import lombok.Setter;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.springframework.stereotype.Service;
-import org.test.entity.minigames.HangmanSession;
-import org.test.entity.minigames.HangmanTopic;
+import org.test.entity.game.HangmanSession;
+import org.test.entity.game.HangmanTopic;
 import org.test.utils.MathUtil;
 import org.test.utils.RandomWordUtil;
 

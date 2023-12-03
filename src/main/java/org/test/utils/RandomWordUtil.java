@@ -1,7 +1,6 @@
 package org.test.utils;
 
-import org.test.entity.minigames.HangmanSession;
-import org.test.entity.minigames.HangmanTopic;
+import org.test.entity.game.HangmanTopic;
 
 import java.util.List;
 import java.util.Objects;

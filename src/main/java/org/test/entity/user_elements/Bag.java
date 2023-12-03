@@ -26,6 +26,14 @@ public class Bag {
     @Transient
     private List<BagElement> content;
 
+    public static Integer startBagSize = 10;
+    public static Integer bagSizePerUpgrade = 2;
+    public static Integer startUpgradePrice = 200;
+
+    public Integer getLevel()
+    {
+        return (bagSize - startBagSize) / bagSizePerUpgrade;
+    }
     public void addOre(Ore ore, Long count) throws Exception {
         Long oreAmount = content.stream().map(x -> x.getOreAmount())
                 .reduce(0L, (a, b) -> a + b);

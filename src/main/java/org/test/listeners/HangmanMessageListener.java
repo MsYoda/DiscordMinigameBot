@@ -7,11 +7,10 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.test.entity.minigames.HangmanSession;
-import org.test.services.Hangman;
+import org.test.entity.game.HangmanSession;
+import org.test.services.games.Hangman;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Optional;
 
 @Service
@@ -69,30 +68,37 @@ public class HangmanMessageListener extends ListenerAdapter {
             if (event.getMessage().getContentDisplay().toLowerCase().charAt(0) == 'y')
             {
                 embedBuilder = getHangmanEmbed(hangman.getSession(userID).get());
+                interactionHook.editOriginalEmbeds(embedBuilder.build()).queue();
+                event.getMessage().delete().queue();
             }
-            else if (event.getMessage().getContentDisplay().length() == 1)
+            else if (event.getMessage().getContentDisplay().length() == 1 &&
+                Character.UnicodeBlock.CYRILLIC.equals(
+                        Character.UnicodeBlock.of(event.getMessage().getContentDisplay().toLowerCase().charAt(0))
+                        )
+                    )
             {
                 HangmanSession session = hangman.guess(event.getMessage().getContentDisplay().toLowerCase().charAt(0), userID);
                 embedBuilder = getHangmanEmbed(session);
-            }
-            boolean endOfGame = false;
-            if (hangman.isUserWin(userID))
-            {
-                embedBuilder.setFooter("Вы победили!");
-                endOfGame = true;
-            }
-            if (hangman.isUserLoose(userID))
-            {
-                embedBuilder.setFooter("Вы проиграли((");
-                endOfGame = true;
-            }
-            if (endOfGame)
-            {
-                hangman.deleteSession(userID);
-            }
 
-            interactionHook.editOriginalEmbeds(embedBuilder.build()).queue();
-            event.getMessage().delete().queue();
+                boolean endOfGame = false;
+                if (hangman.isUserWin(userID))
+                {
+                    embedBuilder.setFooter("Вы победили!");
+                    endOfGame = true;
+                }
+                if (hangman.isUserLoose(userID))
+                {
+                    embedBuilder.setFooter("Вы проиграли((");
+                    endOfGame = true;
+                }
+                if (endOfGame)
+                {
+                    hangman.deleteSession(userID);
+                }
+
+                interactionHook.editOriginalEmbeds(embedBuilder.build()).queue();
+                event.getMessage().delete().queue();
+            }
         }
     }
 }

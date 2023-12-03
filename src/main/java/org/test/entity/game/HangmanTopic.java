@@ -1,4 +1,4 @@
-package org.test.entity.minigames;
+package org.test.entity.game;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

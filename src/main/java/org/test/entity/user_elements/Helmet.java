@@ -21,4 +21,17 @@ public class Helmet {
     private Integer toughness;
     private Integer lightPower;
     private Integer maxToughness;
+
+    public static Integer startToughness = 50;
+    public static Integer toughnessPerUpgrade = 20;
+
+    public static Integer startLightPower = 1;
+    public static Integer lightPowerPerUpgrade = 1;
+
+    public static Integer startUpgradePrice = 400;
+
+    public Integer getLevel()
+    {
+        return (maxToughness - startToughness) / toughnessPerUpgrade;
+    }
 }

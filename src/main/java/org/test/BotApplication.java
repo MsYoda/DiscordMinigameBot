@@ -12,6 +12,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.test.dao.implementation.CooldownDAO;
+import org.test.entity.Cooldown;
 import org.test.listeners.HangmanMessageListener;
 import org.test.listeners.SlashCommandListener;
 import org.test.utils.MathUtil;
@@ -34,8 +36,8 @@ public class BotApplication {
     {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BotApplication.class);
-        
-        jda = JDABuilder.createDefault("")
+
+        jda = JDABuilder.createDefault("MTEzOTYzMDA3NjU5ODY5Mzg5OA.G-K8Iv.-lw3UvzWRDbnMEW3CqP2JpNwsfm8nMksX7yLv4")
                 .disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .setBulkDeleteSplittingEnabled(false)
@@ -54,10 +56,12 @@ public class BotApplication {
                         .addOption(OptionType.ROLE, "role", "Покупаемая роль"),
                 Commands.slash("roles_shop", "Список ролей для покупки"),
                 Commands.slash("update_role", "Изменить цену роли")
+                        .addOption(OptionType.ROLE, "role", "Роль для обновления")
                         .addOption(OptionType.INTEGER, "price", "Новая цена"),
                 Commands.slash("delete_role", "Удалить роль")
                         .addOption(OptionType.ROLE, "role", "Удаляемая роль"),
-                Commands.slash("hangman", "Сыграть в виселицу")
+                Commands.slash("hangman", "Сыграть в виселицу"),
+                Commands.slash("upgrade_item", "Меню улучшения")
         ).queue();
 
     }
