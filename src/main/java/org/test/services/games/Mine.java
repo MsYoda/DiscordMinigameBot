@@ -25,9 +25,11 @@ public class Mine {
     private UserDAO userDAO;
     @Autowired
     private OreDAO oreDAO;
-
     @Autowired
     private CooldownManager cooldownManager;
+    @Autowired
+    private MathUtil mathUtil;
+
     private List<OreDTO> mapBagToOreDTOList(List<BagElement> content, List<Ore> ores)
     {
         List<OreDTO> result = new ArrayList<>();
@@ -55,17 +57,17 @@ public class Mine {
     }
     private void mineOre(User user, List<Ore> ores) throws SQLException {
         Float totalRarity = (float) ores.stream().mapToDouble(Ore::getRarity).sum();
-        Float randomValue = MathUtil.getRandomFloat(0.0f, totalRarity);
+        Float randomValue = mathUtil.getRandomFloat(0.0f, totalRarity);
 
         Float cumulativeRarity = 0f;
-        int oreCount = MathUtil.getRandomInt(1, 3) + user.getHelmet().getLightPower();
+        int oreCount = mathUtil.getRandomInt(1, 3) + user.getHelmet().getLightPower();
 
         for (int i = 0; i < oreCount; i++) {
             for (Ore ore : ores) {
                 cumulativeRarity += ore.getRarity();
                 if (randomValue < cumulativeRarity) {
                     try {
-                        user.getBag().addOre(ore, (long) Math.round(MathUtil.getRandomInt(1, 10) * user.getPick().getOreMultiplayer()));
+                        user.getBag().addOre(ore, (long) Math.round(mathUtil.getRandomInt(1, 10) * user.getPick().getOreMultiplayer()));
                         break;
                     } catch (Exception e) {
                         return;
@@ -73,17 +75,17 @@ public class Mine {
                 }
             }
             cumulativeRarity = 0f;
-            randomValue = MathUtil.getRandomFloat(0.0f, totalRarity);
+            randomValue = mathUtil.getRandomFloat(0.0f, totalRarity);
         }
     }
 
     private void caveDestructionEvent(User user)
     {
-        Integer p = MathUtil.getRandomInt(0, 10);
+        Integer p = mathUtil.getRandomInt(0, 10);
 
         if (p < 2)
         {
-            int damage = MathUtil.getRandomInt(0, 70) + 20;
+            int damage = mathUtil.getRandomInt(0, 70) + 20;
             Integer helmetHP = user.getHelmet().getToughness();
             helmetHP -= damage;
             if (helmetHP <= 0)

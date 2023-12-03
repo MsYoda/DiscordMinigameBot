@@ -26,7 +26,7 @@
       <artifactId>JDA</artifactId>
       <version>5.0.0-beta.13</version>
     </dependency>
-      <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+
       <dependency>
           <groupId>org.projectlombok</groupId>
           <artifactId>lombok</artifactId>
@@ -34,32 +34,51 @@
           <scope>provided</scope>
       </dependency>
 
+
+      <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.13.2</version>
+          <scope>test</scope>
+      </dependency>
+
+      <dependency>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-core</artifactId>
+          <version>5.8.0</version>
+          <scope>test</scope>
+      </dependency>
+
       <dependency>
           <groupId>ch.qos.logback</groupId>
           <artifactId>logback-classic</artifactId>
           <version>1.2.8</version>
       </dependency>
+      <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
       <dependency>
           <groupId>org.postgresql</groupId>
           <artifactId>postgresql</artifactId>
-          <scope>runtime</scope>
+          <version>42.6.0</version>
       </dependency>
 
-      <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-jpa -->
+
       <dependency>
           <groupId>org.springframework.data</groupId>
           <artifactId>spring-data-jpa</artifactId>
           <version>3.1.5</version>
       </dependency>
 
-      <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
-      <!-- https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-core -->
       <dependency>
           <groupId>org.hibernate.orm</groupId>
           <artifactId>hibernate-core</artifactId>
           <version>6.2.4.Final</version>
       </dependency>
-
+      <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter</artifactId>
+          <version>RELEASE</version>
+          <scope>test</scope>
+      </dependency>
 
 
   </dependencies>

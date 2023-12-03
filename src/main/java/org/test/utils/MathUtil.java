@@ -1,13 +1,17 @@
 package org.test.utils;
 
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
 import java.util.Random;
 
+@Component
 public class MathUtil {
-    public static Float getRandomFloat(Float a, Float b)
+    public  Float getRandomFloat(Float a, Float b)
     {
         return new Random().nextFloat(b - a) + a;
     }
-    public static Integer getRandomInt(Integer a, Integer b)
+    public  Integer getRandomInt(Integer a, Integer b)
     {
         return new Random().nextInt(b + 1 - a) + a;
     }

@@ -1,9 +1,10 @@
 package org.test.services.games;
 
 import net.dv8tion.jda.api.interactions.InteractionHook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.test.entity.game.HangmanSession;
-import org.test.entity.game.HangmanTopic;
+import org.test.entity.game.hangman.HangmanSession;
+import org.test.entity.game.hangman.HangmanTopic;
 import org.test.utils.MathUtil;
 import org.test.utils.RandomWordUtil;
 
@@ -12,10 +13,16 @@ import java.util.Optional;
 
 @Service
 public class Hangman {
+
+    @Autowired
+    private RandomWordUtil randomWordUtil;
+    @Autowired
+    private MathUtil mathUtil;
+
     private final HashMap<Long, HangmanSession> hangmanSessions = new HashMap<>();
     public HangmanSession runActivity(InteractionHook interactionHook, Long userID)
     {
-        HangmanTopic topic = RandomWordUtil.generateWord();
+        HangmanTopic topic = randomWordUtil.generateWord();
         HangmanSession hangmanSession = HangmanSession.builder()
                 .interactionHook(interactionHook)
                 .errorCount((byte) 0)
@@ -28,7 +35,7 @@ public class Hangman {
         hangmanSession.setGuess(guess);
         hangmanSessions.put(userID, hangmanSession);
 
-        int ind = MathUtil.getRandomInt(0, hangmanSession.getAnswer().length() - 1);
+        int ind = mathUtil.getRandomInt(0, hangmanSession.getAnswer().length() - 1);
         char toOpen = hangmanSession.getAnswer().charAt(ind);
 
         hangmanSession = guess(toOpen, userID);

@@ -1,13 +1,20 @@
 package org.test.utils;
 
-import org.test.entity.game.HangmanTopic;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.test.entity.game.hangman.HangmanTopic;
 
 import java.util.List;
 import java.util.Objects;
 
+@Component
 public class RandomWordUtil {
 
-    private static final List<HangmanTopic> topics = List.of(
+    @Autowired
+    private MathUtil mathUtil;
+
+    private  final List<HangmanTopic> topics = List.of(
             HangmanTopic.builder()
                     .topic("Eда")
                     .words(List.of("яблоко", "мясо", "пирог", "картофель", "манго", "черника"))
@@ -22,11 +29,11 @@ public class RandomWordUtil {
                     .build()
 
     );
-    public static HangmanTopic generateWord()
+    public  HangmanTopic generateWord()
     {
-        String topic = topics.get(MathUtil.getRandomInt(0, topics.size() - 1)).getTopic();
+        String topic = topics.get(mathUtil.getRandomInt(0, topics.size() - 1)).getTopic();
         List<String> words = topics.stream().filter(s -> Objects.equals(s.getTopic(), topic)).findFirst().get().getWords();
-        String word = words.get(MathUtil.getRandomInt(0, words.size() - 1));
+        String word = words.get(mathUtil.getRandomInt(0, words.size() - 1));
         return HangmanTopic.builder()
                 .topic(topic)
                 .words(List.of(word))

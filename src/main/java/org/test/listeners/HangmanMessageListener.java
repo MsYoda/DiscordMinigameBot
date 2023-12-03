@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.test.entity.game.HangmanSession;
+import org.test.entity.game.hangman.HangmanSession;
 import org.test.services.games.Hangman;
 
 import java.util.HashMap;

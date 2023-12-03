@@ -17,7 +17,11 @@ import org.test.dto.MineDTO;
 import org.test.dto.OreDTO;
 import org.test.entity.Role;
 import org.test.entity.User;
-import org.test.entity.game.HangmanSession;
+import org.test.entity.game.blackjack.BlackJackSession;
+import org.test.entity.game.blackjack.Card;
+import org.test.entity.game.blackjack.CardSuit;
+import org.test.entity.game.hangman.HangmanSession;
+import org.test.services.games.BlackJack;
 import org.test.services.games.Hangman;
 import org.test.services.games.Mine;
 import org.test.services.games.Shop;
@@ -25,7 +29,6 @@ import org.test.utils.DiscordUtil;
 import org.test.utils.TimeUtil;
 
 import java.sql.SQLException;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -42,6 +45,8 @@ public class SlashCommandListener extends ListenerAdapter {
     private Shop shop;
     @Autowired
     private Hangman hangman;
+    @Autowired
+    private BlackJack blackJack;
 
     public MessageEmbed errorEmbed(String text){
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -50,7 +55,7 @@ public class SlashCommandListener extends ListenerAdapter {
 
         return embedBuilder.build();
     }
-    public MessageEmbed doMine(SlashCommandInteractionEvent event){
+    public void doMine(SlashCommandInteractionEvent event){
         event.deferReply().queue();
         Long userID = Long.valueOf(event.getMember().getId());
 
@@ -65,33 +70,37 @@ public class SlashCommandListener extends ListenerAdapter {
             {
                 event.getHook().editOriginalEmbeds(errorEmbed("Время отката команды ещё не прошло\n" +
                         "Осталось: " + TimeUtil.getDurationInString(LocalDateTime.now(), mineDTO.getEndTime()))).queue();
-                return embedBuilder.build();
+                return ;
             }
             if (mineDTO.isUserDead())
             {
                 embedBuilder.addField("Реузльтат", "Пещера обрушилась и вы с трудом выбрались из-под завала\n" +
                                                                 "Ваша каска не спасла вас и вы потеряли все полученные ресурсы", false);
                 event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
-                return embedBuilder.build();
+                return;
             }
 
-            Long sum = 0L;
+            long sum = 0L;
             for (OreDTO x : mineDTO.getOreDTOList())
             {
                 embedBuilder.addField(x.getName(), x.getAmount().toString() + " x " + x.getPrice() + " = " + x.getPrice() * x.getAmount() + " монет", false);
                 sum += x.getPrice() * x.getAmount();
             }
 
-            embedBuilder.addField("Сумма", sum.toString() + " монет", false);
+            embedBuilder.addField("Сумма", sum + " монет", false);
 
         }
         catch (SQLException e) {}
 
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
-        return embedBuilder.build();
     }
-    public MessageEmbed doAddRole(SlashCommandInteractionEvent event) {
-        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) return errorEmbed("Отсутствуют права");
+    public void doAddRole(SlashCommandInteractionEvent event) {
+        event.deferReply().queue();
+
+        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+            errorEmbed("Отсутствуют права");
+            return;
+        }
         Role role = new Role();
         role.setId(event.getOption("role").getAsRole().getIdLong());
         role.setPrice(event.getOption("price").getAsLong());
@@ -102,9 +111,11 @@ public class SlashCommandListener extends ListenerAdapter {
         catch (Exception e) {
             if (e instanceof SQLException)
             {
-                return errorEmbed("Проблемы с сервером");
+                event.getHook().editOriginalEmbeds(errorEmbed("Сервер не доступен")).queue();
+                return;
             }
-            return errorEmbed(e.getMessage());
+            event.getHook().editOriginalEmbeds(errorEmbed(e.getMessage())).queue();
+            return;
         }
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -112,10 +123,11 @@ public class SlashCommandListener extends ListenerAdapter {
         embedBuilder.addField("Результат", "Роль добавлена", false);
 
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
-        return embedBuilder.build();
+        embedBuilder.build();
     }
 
-    public MessageEmbed doBuyRole(SlashCommandInteractionEvent event) {
+    public void doBuyRole(SlashCommandInteractionEvent event) {
+        event.deferReply().queue();
 
         Long roleID = event.getOption("role").getAsRole().getIdLong();
         Long userID = Long.valueOf(event.getMember().getId());
@@ -129,9 +141,11 @@ public class SlashCommandListener extends ListenerAdapter {
         {
             if (e instanceof SQLException)
             {
-                return errorEmbed("Проблемы с сервером");
+                event.getHook().editOriginalEmbeds(errorEmbed("Сервер не доступен")).queue();
+                return ;
             }
-            return errorEmbed(e.getMessage());
+            event.getHook().editOriginalEmbeds(errorEmbed(e.getMessage())).queue();
+            return ;
         }
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -139,10 +153,11 @@ public class SlashCommandListener extends ListenerAdapter {
         embedBuilder.addField("Результат", "Роль куплена", false);
 
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
-        return embedBuilder.build();
     }
 
-    public MessageEmbed doRolesShop(SlashCommandInteractionEvent event) {
+    public void doRolesShop(SlashCommandInteractionEvent event) {
+        event.deferReply().queue();
+
         Guild guild = event.getMember().getGuild();
         List<Role> roles = null;
         try {
@@ -150,7 +165,8 @@ public class SlashCommandListener extends ListenerAdapter {
         }
         catch (SQLException e)
         {
-            return errorEmbed("Сервер не доступен");
+            event.getHook().editOriginalEmbeds(errorEmbed("Сервер не доступен")).queue();
+            return;
         }
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -161,10 +177,16 @@ public class SlashCommandListener extends ListenerAdapter {
         }
 
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
-        return embedBuilder.build();
     }
-    public MessageEmbed doUpdateRole(SlashCommandInteractionEvent event) {
-        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) return errorEmbed("Отсутствуют права");
+    public void doUpdateRole(SlashCommandInteractionEvent event) {
+        event.deferReply().queue();
+
+        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR))
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Отсутствуют права")).queue();
+            return ;
+        }
+
         Long newPrice = event.getOption("price").getAsLong();
 
         try {
@@ -172,11 +194,13 @@ public class SlashCommandListener extends ListenerAdapter {
         }
         catch (SQLException e)
         {
-            return errorEmbed("Ошибка на сервере");
+            event.getHook().editOriginalEmbeds(errorEmbed("Сервер не доступен")).queue();
+            return ;
         }
         catch (NoSuchElementException e)
         {
-            return errorEmbed("Такой роли не существует");
+            event.getHook().editOriginalEmbeds(errorEmbed("Такой роли не существует")).queue();
+            return ;
         }
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -184,21 +208,28 @@ public class SlashCommandListener extends ListenerAdapter {
         embedBuilder.addField("Результат", "Роль обновлена", false);
 
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
-        return embedBuilder.build();
     }
 
-    public MessageEmbed doDeleteRole(SlashCommandInteractionEvent event) {
-        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) return errorEmbed("Отсутствуют права");
+    public void doDeleteRole(SlashCommandInteractionEvent event) {
+        event.deferReply().queue();
+
+        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR))
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Отсутствуют права")).queue();
+            return ;
+        }
         try {
             shop.deleteRole(event.getOption("role").getAsRole().getIdLong());
         }
         catch (SQLException e)
         {
-            return errorEmbed("Ошибка на сервере");
+            event.getHook().editOriginalEmbeds(errorEmbed("Сервер не доступен")).queue();
+            return ;
         }
         catch (NoSuchElementException e)
         {
-            return errorEmbed("Такой роли не существует");
+            event.getHook().editOriginalEmbeds(errorEmbed("Такой роли не существует")).queue();
+            return ;
         }
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -206,10 +237,9 @@ public class SlashCommandListener extends ListenerAdapter {
         embedBuilder.addField("Результат", "Роль удалена", false);
 
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
-        return embedBuilder.build();
     }
 
-    public MessageEmbed doHangman(SlashCommandInteractionEvent event) {
+    public void doHangman(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
         HangmanSession session = hangman.runActivity(event.getHook(), Long.valueOf(event.getMember().getId()));
 
@@ -217,10 +247,11 @@ public class SlashCommandListener extends ListenerAdapter {
         embedBuilder.setTitle("Виселица");
         embedBuilder.addField("Правила", "Вводите по одной русской букве и нажимайте Enter\nВведите y, чтобы начать игру", false);
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
-        return embedBuilder.build();
     }
 
-    public MessageEmbed doUpgrade(SlashCommandInteractionEvent event){
+    public void doUpgrade(SlashCommandInteractionEvent event){
+        event.deferReply().queue();
+
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle("Меню улучшений");
 
@@ -241,27 +272,82 @@ public class SlashCommandListener extends ListenerAdapter {
         }
         catch (SQLException e)
         {
-            return errorEmbed("Ошибка на севрере!");
+            event.getHook().editOriginalEmbeds(errorEmbed("Сервер не доступен")).queue();
+            return ;
         }
         catch (NoSuchElementException e)
         {
-            return errorEmbed("Вы не зарегистроваын в системе!");
+            event.getHook().editOriginalEmbeds(errorEmbed("Вы не зарегистроваын в системе!")).queue();
+            return ;
         }
 
         event.replyEmbeds(embedBuilder.build()).setActionRow(
-                Button.secondary("pick", Emoji.fromUnicode("⛏\uFE0F")),
-                Button.secondary("helmet", Emoji.fromUnicode("⛑\uFE0F")),
-                Button.secondary("bag", Emoji.fromUnicode("\uD83D\uDCB0"))
+                Button.secondary("up_pick", Emoji.fromUnicode("⛏\uFE0F")),
+                Button.secondary("up_helmet", Emoji.fromUnicode("⛑\uFE0F")),
+                Button.secondary("up_bag", Emoji.fromUnicode("\uD83D\uDCB0"))
         ).setEphemeral(true).queue();
-
-        return embedBuilder.build();
     }
 
-    @Override
-    public void onButtonInteraction(ButtonInteractionEvent event) {
+    public void doBlackJack(SlashCommandInteractionEvent event) {
+        event.deferReply().queue();
+        Long userID = event.getMember().getIdLong();
+        Long bet = event.getOption("bet").getAsLong();
+
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle("Блэк-джэк");
+
+        BlackJackSession blackJackSession = null;
+        try {
+            blackJackSession = blackJack.runActivity(userID, bet);
+        } catch (Exception e) {
+            if (e instanceof SQLException)
+            {
+                event.getHook().editOriginalEmbeds(errorEmbed("Сервер не доступен")).queue();
+                return;
+            }
+            event.getHook().editOriginalEmbeds(errorEmbed(e.getMessage())).queue();
+            return;
+        }
+
+
+        event.getHook().editOriginalEmbeds(getBlackJackEmbed(blackJackSession, false).build()).setActionRow(
+                Button.secondary("bj_take", "Взять"),
+                Button.secondary("bj_enough","Хватит")
+        ).queue();
+
+    }
+
+    public void doInventory(SlashCommandInteractionEvent event)
+    {
+        event.deferReply().queue();
+        Long userID = event.getMember().getIdLong();
+        User user = null;
+        try {
+            user = userDAO.get(userID).orElseThrow();
+        }
+        catch (SQLException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Сервер не доступен")).queue();
+            return;
+        }
+
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle("Инвентарь");
+        embedBuilder.setThumbnail(event.getMember().getAvatarUrl());
+
+        embedBuilder.addField("Монеты", user.getMoney() + " штук", false);
+        embedBuilder.addField("Кирка", user.getPick().getLevel() + " уровня", false);
+        embedBuilder.addField("Шлем", user.getHelmet().getLevel() + " уровня", false);
+        embedBuilder.addField("Рюкзак", user.getBag().getLevel() + " уровня", false);
+
+        event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
+    }
+
+    public void upgradeMenuButtonProcess(ButtonInteractionEvent event)
+    {
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
-        if (event.getComponentId().equals("pick")) {
+        if (event.getComponentId().equals("up_pick")) {
             embedBuilder.setTitle("Улчшение кирки");
             try {
                 shop.upgradePick(event.getUser().getIdLong());
@@ -276,7 +362,8 @@ public class SlashCommandListener extends ListenerAdapter {
                 return;
             }
 
-        } else if (event.getComponentId().equals("helmet")) {
+        }
+        else if (event.getComponentId().equals("up_helmet")) {
             embedBuilder.setTitle("Улчшение шлема");
             try {
                 shop.upgradeHelmet(event.getUser().getIdLong());
@@ -291,7 +378,7 @@ public class SlashCommandListener extends ListenerAdapter {
                 return;
             }
         }
-        else if (event.getComponentId().equals("bag")) {
+        else if (event.getComponentId().equals("up_bag")) {
             embedBuilder.setTitle("Улчшение рюкзака");
             try {
                 shop.upgradeBag(event.getUser().getIdLong());
@@ -306,13 +393,88 @@ public class SlashCommandListener extends ListenerAdapter {
                 return;
             }
         }
+
         event.editMessageEmbeds(embedBuilder.build()).queue();
+    }
+
+    private EmbedBuilder getBlackJackEmbed(BlackJackSession session, boolean showBotHand)
+    {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle("Блэк-джэк");
+
+        if (!showBotHand)
+        {
+            embedBuilder.addField("Рука бота", "? ".repeat(session.getBotDeck().size()), false);
+        }
+        else
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Card card: session.getBotDeck())
+            {
+                stringBuilder.append(card.getCard()).append(CardSuit.getSymbol(card.getSuit())).append(' ');
+            }
+            embedBuilder.addField("Рука бота", stringBuilder.toString(), false);
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Card card: session.getUserDeck())
+        {
+            stringBuilder.append(card.getCard()).append(CardSuit.getSymbol(card.getSuit())).append(' ');
+        }
+        embedBuilder.addField("Ваша рука", stringBuilder.toString(), false);
+        return embedBuilder;
+    }
+    public void blackJackButtonProcess(ButtonInteractionEvent event)
+    {
+        BlackJackSession session = null;
+        Long userID = event.getMember().getIdLong();
+
+        if (!blackJack.isSessionExist(userID)) return;
+
+        if (event.getComponentId().equals("bj_take")) {
+            blackJack.deal(userID);
+            session = blackJack.botThinks(userID);
+        }
+        else if (event.getComponentId().equals("bj_enough")){
+            while (!blackJack.isGameOver(userID)){
+                session = blackJack.botThinks(userID);
+            }
+        }
+        if (blackJack.isGameOver(userID)) {
+            EmbedBuilder embedBuilder = getBlackJackEmbed(session, true);
+            if (blackJack.isUserWin(userID)){
+                User user = null;
+                try {
+                    user = userDAO.get(userID).get();
+                    user.setMoney(user.getMoney() + session.getBet() * BlackJack.winMultiplayer);
+                    userDAO.update(user);
+                } catch (SQLException e) {
+                    event.editMessageEmbeds(errorEmbed("Сервер недоступен")).queue();
+                }
+                embedBuilder.setFooter("Вы победили! Ваш выйгрыш: " + session.getBet() * BlackJack.winMultiplayer + " монет");
+            }
+            else {
+                embedBuilder.setFooter("Вы проиграли((");
+            }
+            event.editMessageEmbeds(embedBuilder.build()).queue();
+            blackJack.deleteSession(userID);
+        }
+        else{
+            EmbedBuilder embedBuilder = getBlackJackEmbed(session, false);
+            event.editMessageEmbeds(embedBuilder.build()).queue();
+        }
+    }
+
+
+    @Override
+    public void onButtonInteraction(ButtonInteractionEvent event) {
+        if (event.getComponentId().startsWith("up")) upgradeMenuButtonProcess(event);
+        else if (event.getComponentId().startsWith("bj")) blackJackButtonProcess(event);
     }
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event)
     {
-        MessageEmbed botReply = null;
         Long userID = Long.valueOf(event.getMember().getId());
         try {
             userDAO.get(userID);
@@ -324,14 +486,16 @@ public class SlashCommandListener extends ListenerAdapter {
             }
         }
         switch (event.getName()) {
-            case "mine" -> botReply = doMine(event);
-            case "add_role" -> botReply = doAddRole(event);
-            case "buy_role" -> botReply = doBuyRole(event);
-            case "roles_shop" -> botReply = doRolesShop(event);
-            case "update_role" -> botReply = doUpdateRole(event);
-            case "delete_role" -> botReply = doDeleteRole(event);
-            case "hangman" -> botReply = doHangman(event);
-            case "upgrade_item" -> botReply = doUpgrade(event);
+            case "mine" -> doMine(event);
+            case "add_role" -> doAddRole(event);
+            case "buy_role" -> doBuyRole(event);
+            case "roles_shop" -> doRolesShop(event);
+            case "update_role" -> doUpdateRole(event);
+            case "delete_role" -> doDeleteRole(event);
+            case "hangman" -> doHangman(event);
+            case "upgrade_item" -> doUpgrade(event);
+            case "black_jack" -> doBlackJack(event);
+            case "inventory" -> doInventory(event);
         }
 
     }

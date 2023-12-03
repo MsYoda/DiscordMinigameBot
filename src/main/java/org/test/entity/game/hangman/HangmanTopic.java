@@ -1,4 +1,4 @@
-package org.test.entity.game;
+package org.test.entity.game.hangman;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,5 +1,7 @@
 package org.test;
 
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.hibernate.SessionFactory;
 import net.dv8tion.jda.api.JDA;
@@ -37,7 +39,7 @@ public class BotApplication {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BotApplication.class);
 
-        jda = JDABuilder.createDefault("MTEzOTYzMDA3NjU5ODY5Mzg5OA.G-K8Iv.-lw3UvzWRDbnMEW3CqP2JpNwsfm8nMksX7yLv4")
+        jda = JDABuilder.createDefault("")
                 .disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .setBulkDeleteSplittingEnabled(false)
@@ -51,17 +53,23 @@ public class BotApplication {
                 Commands.slash("mine", "Отправиться в шахту за новыми ресурсами"),
                 Commands.slash("add_role", "Добавить роль в магазин")
                         .addOption(OptionType.ROLE, "role", "Роль для добавления в магазин")
-                        .addOption(OptionType.INTEGER, "price", "Цена роли"),
+                        .addOption(OptionType.INTEGER, "price", "Цена роли")
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("buy_role", "Добавить роль в магазин")
                         .addOption(OptionType.ROLE, "role", "Покупаемая роль"),
                 Commands.slash("roles_shop", "Список ролей для покупки"),
                 Commands.slash("update_role", "Изменить цену роли")
                         .addOption(OptionType.ROLE, "role", "Роль для обновления")
-                        .addOption(OptionType.INTEGER, "price", "Новая цена"),
+                        .addOption(OptionType.INTEGER, "price", "Новая цена")
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("delete_role", "Удалить роль")
-                        .addOption(OptionType.ROLE, "role", "Удаляемая роль"),
+                        .addOption(OptionType.ROLE, "role", "Удаляемая роль")
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)),
                 Commands.slash("hangman", "Сыграть в виселицу"),
-                Commands.slash("upgrade_item", "Меню улучшения")
+                Commands.slash("black_jack", "Сыграть в блэк-джэк")
+                        .addOption(OptionType.INTEGER, "bet", "Ставка на игру"),
+                Commands.slash("upgrade_item", "Меню улучшения"),
+                Commands.slash("inventory", "Изучить свой профиль")
         ).queue();
 
     }
