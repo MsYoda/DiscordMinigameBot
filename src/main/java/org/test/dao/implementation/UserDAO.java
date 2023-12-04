@@ -24,7 +24,7 @@ public class UserDAO implements UserDAOInterface {
     public void addEmptyUser(Long id) throws SQLException {
         Helmet helmet = Helmet.builder().lightPower(Helmet.startLightPower).maxToughness(Helmet.startToughness).toughness(Helmet.startToughness).build();
         Pick pick = Pick.builder().oreMultiplayer(Pick.startOreMultiplayer).rareOreProbability(Pick.startRareOreProbability).build();
-        Bag bag = Bag.builder().bagSize(7).build();
+        Bag bag = Bag.builder().bagSize(Bag.startBagSize).build();
         User user = User.builder().bag(bag).helmet(helmet).pick(pick).money(0L).id(id).build();
 
         Session session = sessionManager.getSession();

@@ -29,7 +29,7 @@ public class RandomWordUtil {
                     .build()
 
     );
-    public  HangmanTopic generateWord()
+    public HangmanTopic generateWord()
     {
         String topic = topics.get(mathUtil.getRandomInt(0, topics.size() - 1)).getTopic();
         List<String> words = topics.stream().filter(s -> Objects.equals(s.getTopic(), topic)).findFirst().get().getWords();

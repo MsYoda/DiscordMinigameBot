@@ -2,6 +2,7 @@ package org.test.services.games;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -15,10 +16,10 @@ import org.test.utils.MathUtil;
 import org.junit.jupiter.api.Assertions;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.sql.SQLException;
+import java.util.*;
+
+import static org.junit.Assert.assertThrows;
 
 public class BlackJackTests {
 
@@ -128,7 +129,7 @@ public class BlackJackTests {
         Assertions.assertTrue(sessionHashMap.get(1L).isBotEnough());
     }
     @Test
-    public void testBotThinkEnoughUserDoEnough()
+    public void testBotThinkWhenUserEnoughSetEnough()
     {
         Mockito.when(mathUtil.getRandomInt(Mockito.any(), Mockito.any())).thenReturn(0);
 
@@ -144,5 +145,46 @@ public class BlackJackTests {
         BlackJack blackJack = new BlackJack(userDAO, mathUtil, sessionHashMap);
         blackJack.botThinks(1L);
         Assertions.assertTrue(sessionHashMap.get(1L).isBotEnough());
+    }
+
+    @Test
+    public void testRunActivity() throws Exception {
+        User user = User.builder().money(500L).build();
+        Mockito.when(userDAO.get(1L)).thenReturn(Optional.of(user));
+
+        BlackJack blackJack = new BlackJack(userDAO, mathUtil);
+        BlackJackSession session = blackJack.runActivity(1L, 200L);
+
+       Assertions.assertEquals(session.getBotDeck().size(), session.getUserDeck().size(), BlackJack.startCardCount);
+       Assertions.assertEquals(user.getMoney(), 500L - 200L);
+    }
+    @Test
+    public void testRunActivityWithMoneyException() throws Exception {
+        User user = User.builder().money(150L).build();
+        Mockito.when(userDAO.get(1L)).thenReturn(Optional.of(user));
+
+        BlackJack blackJack = new BlackJack(userDAO, mathUtil);
+
+        assertThrows(Exception.class, ()->{
+            BlackJackSession session = blackJack.runActivity(1L, 500L);
+        });
+
+    }
+
+    @Test
+    public void testRunActivityWithSessionException() throws Exception {
+        BlackJackSession blackJackSession = BlackJackSession.builder()
+                .userID(1L)
+                .build();
+
+        HashMap<Long, BlackJackSession> sessionHashMap = new HashMap<>();
+        sessionHashMap.put(1L, blackJackSession);
+
+        BlackJack blackJack = new BlackJack(userDAO, mathUtil, sessionHashMap);
+
+        assertThrows(Exception.class, ()->{
+            BlackJackSession session = blackJack.runActivity(1L, 200L);
+        });
+
     }
 }

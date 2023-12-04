@@ -1,11 +1,17 @@
 package org.test.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "ore")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Ore {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

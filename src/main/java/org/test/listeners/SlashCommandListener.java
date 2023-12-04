@@ -250,7 +250,6 @@ public class SlashCommandListener extends ListenerAdapter {
     }
 
     public void doUpgrade(SlashCommandInteractionEvent event){
-        event.deferReply().queue();
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle("Меню улучшений");

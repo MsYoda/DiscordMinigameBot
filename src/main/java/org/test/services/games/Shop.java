@@ -22,6 +22,11 @@ public class Shop {
     @Autowired
     private RoleDAO roleDAO;
 
+    public Shop(UserDAO userDAO, RoleDAO roleDAO) {
+        this.userDAO = userDAO;
+        this.roleDAO = roleDAO;
+    }
+
     public void addRoleToShop(Role role) throws Exception {
         if (roleDAO.get(role.getId()).isPresent()) throw new Exception("Роль уже существует");
         roleDAO.add(role);
@@ -52,12 +57,12 @@ public class Shop {
         Optional<Role> roleOptional = roleDAO.get(roleID);
         if (roleOptional.isEmpty())
         {
-            throw new Exception("Role not found");
+            throw new Exception("Роль не найдена");
         }
 
         Role role = roleOptional.get();
 
-        if (user.getMoney() < role.getPrice()) throw new Exception("Dont have money");
+        if (user.getMoney() < role.getPrice()) throw new Exception("У вас недостаточно монет");
         user.setMoney(user.getMoney() - role.getPrice());
 
         userDAO.update(user);
@@ -93,7 +98,9 @@ public class Shop {
     public void upgradePick(Long userID) throws Exception {
         User user = userDAO.get(userID).orElseThrow();
         Long price = getPickUpgradePrice(user);
-        if (user.getMoney() < price) throw new Exception("Недостаточно монет!");
+        if (user.getMoney() < price) {
+            throw new Exception("Недостаточно монет!");
+        }
 
         Pick pick = user.getPick();
         pick.setOreMultiplayer(pick.getOreMultiplayer() + Pick.oreMultiplayerPerUpgrade);
@@ -107,7 +114,9 @@ public class Shop {
     public void upgradeHelmet(Long userID) throws Exception {
         User user = userDAO.get(userID).orElseThrow();
         Long price = getHelmetUpgradePrice(user);
-        if (user.getMoney() < price) throw new Exception("Недостаточно монет!");
+        if (user.getMoney() < price) {
+            throw new Exception("Недостаточно монет!");
+        }
 
         Helmet helmet = user.getHelmet();
         helmet.setToughness(helmet.getToughness() + Helmet.toughnessPerUpgrade);
@@ -121,7 +130,9 @@ public class Shop {
     public void upgradeBag(Long userID) throws Exception {
         User user = userDAO.get(userID).orElseThrow();
         Long price = getBagUpgradePrice(user);
-        if (user.getMoney() < price) throw new Exception("Недостаточно монет!");
+        if (user.getMoney() < price) {
+            throw new Exception("Недостаточно монет!");
+        }
 
         Bag bag = user.getBag();
         bag.setBagSize(bag.getBagSize() + Bag.bagSizePerUpgrade);

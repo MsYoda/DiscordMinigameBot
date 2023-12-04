@@ -29,6 +29,12 @@ public class Mine {
     private CooldownManager cooldownManager;
     @Autowired
     private MathUtil mathUtil;
+    public Mine(UserDAO userDAO, OreDAO oreDAO, CooldownManager cooldownManager, MathUtil mathUtil) {
+        this.userDAO = userDAO;
+        this.oreDAO = oreDAO;
+        this.cooldownManager = cooldownManager;
+        this.mathUtil = mathUtil;
+    }
 
     private List<OreDTO> mapBagToOreDTOList(List<BagElement> content, List<Ore> ores)
     {

@@ -39,7 +39,7 @@ public class BotApplication {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BotApplication.class);
 
-        jda = JDABuilder.createDefault("")
+        jda = JDABuilder.createDefault("MTEzOTYzMDA3NjU5ODY5Mzg5OA.GskMDz.MMcmjtE3PePDZyCCQzk1i1gTWFQ79THcsYN_EI")
                 .disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .setBulkDeleteSplittingEnabled(false)

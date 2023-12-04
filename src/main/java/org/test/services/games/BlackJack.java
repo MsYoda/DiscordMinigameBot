@@ -21,6 +21,7 @@ public class BlackJack {
     @Autowired
     private MathUtil mathUtil;
     private final HashMap<Long, BlackJackSession> blackJackSessions;
+    public static final Integer startCardCount = 1;
 
     public BlackJack(UserDAO userDAO, MathUtil mathUtil, HashMap<Long, BlackJackSession> blackJackSessions){
         this.blackJackSessions = blackJackSessions;
@@ -163,18 +164,23 @@ public class BlackJack {
         return deckElements;
     }
     public BlackJackSession runActivity(Long userID, Long bet) throws Exception {
-        if (isSessionExist(userID)) throw new Exception("Игра уже идёт!");
+        if (isSessionExist(userID)) {
+            throw new Exception("Игра уже идёт!");
+        }
 
         User user = userDAO.get(userID).orElseThrow();
-        if (user.getMoney() < bet) throw new Exception("Недостаточно монет");
+        if (user.getMoney() < bet){
+            throw new Exception("Недостаточно монет");
+        }
+
         user.setMoney(user.getMoney() - bet);
 
         List<Card> deck = getFullDeck();
         List<Card> userDeck = new ArrayList<>();
         List<Card> botDeck = new ArrayList<>();
 
-        deal(deck, userDeck, 1);
-        deal(deck, botDeck, 1);
+        deal(deck, userDeck, startCardCount);
+        deal(deck, botDeck, startCardCount);
 
         BlackJackSession blackJackSession = BlackJackSession.builder()
                 .botDeck(botDeck)
