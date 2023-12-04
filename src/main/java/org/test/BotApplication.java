@@ -39,11 +39,11 @@ public class BotApplication {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(BotApplication.class);
 
-        jda = JDABuilder.createDefault("MTEzOTYzMDA3NjU5ODY5Mzg5OA.GskMDz.MMcmjtE3PePDZyCCQzk1i1gTWFQ79THcsYN_EI")
+        jda = JDABuilder.createDefault("")
                 .disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE)
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                 .setBulkDeleteSplittingEnabled(false)
-                .setActivity(Activity.watching("TV"))
+                .setActivity(Activity.listening("ваши команды"))
                 .addEventListeners(context.getBean(SlashCommandListener.class))
                 .addEventListeners(context.getBean(HangmanMessageListener.class))
                 .build()

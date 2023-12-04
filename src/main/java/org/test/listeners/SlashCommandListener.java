@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.test.dao.implementation.CooldownDAO;
 import org.test.dao.implementation.UserDAO;
 import org.test.dto.MineDTO;
 import org.test.dto.OreDTO;
@@ -20,7 +19,6 @@ import org.test.entity.User;
 import org.test.entity.game.blackjack.BlackJackSession;
 import org.test.entity.game.blackjack.Card;
 import org.test.entity.game.blackjack.CardSuit;
-import org.test.entity.game.hangman.HangmanSession;
 import org.test.services.games.BlackJack;
 import org.test.services.games.Hangman;
 import org.test.services.games.Mine;
@@ -32,13 +30,12 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Service
 public class SlashCommandListener extends ListenerAdapter {
     @Autowired
     private UserDAO userDAO;
-    @Autowired
-    private CooldownDAO cooldownDAO;
     @Autowired
     private Mine mine;
     @Autowired
@@ -57,11 +54,19 @@ public class SlashCommandListener extends ListenerAdapter {
     }
     public void doMine(SlashCommandInteractionEvent event){
         event.deferReply().queue();
-        Long userID = Long.valueOf(event.getMember().getId());
+        long userID;
+        try {
+           userID = Long.parseLong(Objects.requireNonNull(event.getMember()).getId());
+        }
+        catch (NullPointerException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Некорректно переданы аргументы!")).queue();
+            return;
+        }
+
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle("Результат похода в шахту");
-        embedBuilder.setFooter(event.getUser().getAsTag(), event.getUser().getAvatarUrl());
 
         try {
             MineDTO mineDTO = mine.runActivity(userID);
@@ -90,20 +95,29 @@ public class SlashCommandListener extends ListenerAdapter {
             embedBuilder.addField("Сумма", sum + " монет", false);
 
         }
-        catch (SQLException e) {}
+        catch (SQLException e) {
+            event.getHook().editOriginalEmbeds(errorEmbed("Сервер недоступен!")).queue();
+            return;
+        }
 
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
     }
     public void doAddRole(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
-
-        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
-            errorEmbed("Отсутствуют права");
+        Role role = new Role();
+        try {
+            if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.ADMINISTRATOR)) {
+                errorEmbed("Отсутствуют права");
+                return;
+            }
+            role.setId(Objects.requireNonNull(event.getOption("role")).getAsRole().getIdLong());
+            role.setPrice(Objects.requireNonNull(event.getOption("price")).getAsLong());
+        }
+        catch (NullPointerException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Некорректно переданы аргументы!")).queue();
             return;
         }
-        Role role = new Role();
-        role.setId(event.getOption("role").getAsRole().getIdLong());
-        role.setPrice(event.getOption("price").getAsLong());
 
         try {
             shop.addRoleToShop(role);
@@ -128,9 +142,18 @@ public class SlashCommandListener extends ListenerAdapter {
 
     public void doBuyRole(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
+        long roleID = 0L;
+        long userID = 0L;
+        try {
+            roleID = Objects.requireNonNull(event.getOption("role")).getAsRole().getIdLong();
+            userID = Long.parseLong(Objects.requireNonNull(event.getMember()).getId());
+        }
+        catch (NullPointerException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Некорректно переданы аргументы!")).queue();
+            return;
+        }
 
-        Long roleID = event.getOption("role").getAsRole().getIdLong();
-        Long userID = Long.valueOf(event.getMember().getId());
         Guild guild = event.getMember().getGuild();
 
         try {
@@ -158,8 +181,17 @@ public class SlashCommandListener extends ListenerAdapter {
     public void doRolesShop(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
 
-        Guild guild = event.getMember().getGuild();
-        List<Role> roles = null;
+        Guild guild;
+        try {
+            guild = Objects.requireNonNull(event.getMember()).getGuild();
+        }
+        catch (NullPointerException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Некорректно переданы аргументы!")).queue();
+            return;
+        }
+
+        List<Role> roles;
         try {
             roles = shop.getAllRoles();
         }
@@ -180,17 +212,26 @@ public class SlashCommandListener extends ListenerAdapter {
     }
     public void doUpdateRole(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
-
-        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR))
-        {
-            event.getHook().editOriginalEmbeds(errorEmbed("Отсутствуют права")).queue();
-            return ;
-        }
-
-        Long newPrice = event.getOption("price").getAsLong();
+        long newPrice;
+        long roleID;
 
         try {
-            shop.updateRole(event.getOption("role").getAsRole().getIdLong(), newPrice);
+            if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.ADMINISTRATOR))
+            {
+                event.getHook().editOriginalEmbeds(errorEmbed("Отсутствуют права")).queue();
+                return ;
+            }
+            newPrice = Objects.requireNonNull(event.getOption("price")).getAsLong();
+            roleID = Objects.requireNonNull(event.getOption("role")).getAsRole().getIdLong();
+        }
+        catch (NullPointerException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Некорректно переданы аргументы!")).queue();
+            return;
+        }
+
+        try {
+            shop.updateRole(roleID, newPrice);
         }
         catch (SQLException e)
         {
@@ -212,14 +253,23 @@ public class SlashCommandListener extends ListenerAdapter {
 
     public void doDeleteRole(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
-
-        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR))
-        {
-            event.getHook().editOriginalEmbeds(errorEmbed("Отсутствуют права")).queue();
-            return ;
-        }
+        long roleID;
         try {
-            shop.deleteRole(event.getOption("role").getAsRole().getIdLong());
+            if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.ADMINISTRATOR))
+            {
+                event.getHook().editOriginalEmbeds(errorEmbed("Отсутствуют права")).queue();
+                return ;
+            }
+            roleID = Objects.requireNonNull(event.getOption("role")).getAsRole().getIdLong();
+        }
+        catch (NullPointerException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Некорректно переданы аргументы!")).queue();
+            return;
+        }
+
+        try {
+            shop.deleteRole(roleID);
         }
         catch (SQLException e)
         {
@@ -240,8 +290,15 @@ public class SlashCommandListener extends ListenerAdapter {
     }
 
     public void doHangman(SlashCommandInteractionEvent event) {
-        event.deferReply().queue();
-        HangmanSession session = hangman.runActivity(event.getHook(), Long.valueOf(event.getMember().getId()));
+        event.deferReply().queue();;
+        try {
+            hangman.runActivity(event.getHook(), Long.valueOf(Objects.requireNonNull(event.getMember()).getId()));
+        }
+        catch (NullPointerException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Некорректно переданы аргументы!")).queue();
+            return;
+        }
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle("Виселица");
@@ -251,11 +308,21 @@ public class SlashCommandListener extends ListenerAdapter {
 
     public void doUpgrade(SlashCommandInteractionEvent event){
 
+        long userID;
+        try {
+            userID = Objects.requireNonNull(event.getMember()).getIdLong();
+        }
+        catch (NullPointerException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Некорректно переданы аргументы!")).queue();
+            return;
+        }
+
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle("Меню улучшений");
 
         try {
-            User user = userDAO.get(Long.valueOf(event.getMember().getId())).orElseThrow();
+            User user = userDAO.get(userID).orElseThrow();
             StringBuilder builder = new StringBuilder();
 
             builder.append("Кирка (").append(user.getPick().getLevel()).append(" -> ").append(user.getPick().getLevel() + 1).append(")");
@@ -281,16 +348,26 @@ public class SlashCommandListener extends ListenerAdapter {
         }
 
         event.replyEmbeds(embedBuilder.build()).setActionRow(
-                Button.secondary("up_pick", Emoji.fromUnicode("⛏\uFE0F")),
-                Button.secondary("up_helmet", Emoji.fromUnicode("⛑\uFE0F")),
+                Button.secondary("up_pick", Emoji.fromUnicode("⛏️")),
+                Button.secondary("up_helmet", Emoji.fromUnicode("⛑️")),
                 Button.secondary("up_bag", Emoji.fromUnicode("\uD83D\uDCB0"))
         ).setEphemeral(true).queue();
     }
 
     public void doBlackJack(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
-        Long userID = event.getMember().getIdLong();
-        Long bet = event.getOption("bet").getAsLong();
+        long userID;
+        long bet ;
+
+        try {
+            userID = Objects.requireNonNull(event.getMember()).getIdLong();
+            bet = Objects.requireNonNull(event.getOption("bet")).getAsLong();
+        }
+        catch (NullPointerException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Некорректно переданы аргументы!")).queue();
+            return;
+        }
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle("Блэк-джэк");
@@ -319,8 +396,17 @@ public class SlashCommandListener extends ListenerAdapter {
     public void doInventory(SlashCommandInteractionEvent event)
     {
         event.deferReply().queue();
-        Long userID = event.getMember().getIdLong();
-        User user = null;
+        long userID;
+        try {
+            userID = Objects.requireNonNull(event.getMember()).getIdLong();
+        }
+        catch (NullPointerException e)
+        {
+            event.getHook().editOriginalEmbeds(errorEmbed("Некорректно переданы аргументы!")).queue();
+            return;
+        }
+
+        User user;
         try {
             user = userDAO.get(userID).orElseThrow();
         }
@@ -481,7 +567,7 @@ public class SlashCommandListener extends ListenerAdapter {
             try {
                 userDAO.addEmptyUser(userID);
             } catch (SQLException ex) {
-                return;
+                event.replyEmbeds(errorEmbed("Сервер недоступен!")).queue();
             }
         }
         switch (event.getName()) {
